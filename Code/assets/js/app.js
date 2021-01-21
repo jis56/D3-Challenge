@@ -72,3 +72,75 @@ function renderXAxes(newXScale, xAxis) {
     return yAxis;
   }
 
+// function used for updating circles group with a transition to
+// new circles
+function renderCircles(circlesGroup, newXScale, newYScale, chosenXAxis, chosenYAxis) {
+
+  circlesGroup.transition()
+    .duration(1000)
+    .attr("cx", d => newXScale(d[chosenXAxis]))
+    .attr("cy", d=>newYScale(d[chosenYAxis]));
+  return circlesGroup;
+}
+function renderTexts(txtGroup, newXScale, newYScale, chosenXAxis, chosenYAxis) {
+
+  txtGroup.transition()
+    .duration(1000)
+    .attr("x", d=>newXScale(d[chosenXAxis]))
+    .attr("y", d=>newYScale(d[chosenYAxis]))
+  return txtGroup;
+}
+
+// function used for updating tooltip for circles group
+function updateToolTip(chosenXaxis, chosenYaxis, circlesGroup){
+  let xLabel = ""
+  let yLabel = ""
+  if (chosenXaxis === "poverty"){
+    xLabel = "Poverty: ";
+  }
+  else if (chosenXaxis === "age"){
+    xLabel = "Age: ";
+  }
+  else{
+    xLabel = "Income: $";
+  }
+  if (chosenYaxis === "healthcare"){
+    yLabel = "Healthcare: "
+  }
+  else if (chosenYaxis === "smokes"){
+    yLabel = "Smokes: "
+  }
+  else{
+    yLabel = "Obesity: "
+  }
+  var toolTip = d3.tip()
+    .attr("class", "d3-tip")
+    .offset([80, -60])
+    .html(function(d){
+        if (chosenYaxis === "smokes" || chosenYaxis === "obesity") {
+        if (chosenXaxis === "poverty"){
+            return(`${d.state},${d.abbr}<br>${xLabel}${d[chosenXaxis]}%<br>${yLabel}${d[chosenYaxis]}%`)
+        }
+        return(`${d.state},${d.abbr}<br>${xLabel}${d[chosenXaxis]}<br>${yLabel}${d[chosenYaxis]}%`)
+        }
+        else if (chosenXaxis === "poverty"){
+        return(`${d.state},${d.abbr}<br>${xLabel}${d[chosenXaxis]}%<br>${yLabel}${d[chosenYaxis]}`)
+        }
+        else{
+        return(`${d.state},${d.abbr}<br>${xLabel}${d[chosenXaxis]}<br>${yLabel}${d[chosenYaxis]}`)
+        }  
+    })
+  
+  circlesGroup.call(toolTip);
+  circlesGroup.on("mouseover", function(data){
+    toolTip.show(data, this);
+    d3.select(this).style("stroke", "black");
+    
+  })
+  circlesGroup.on("mouseout", function(data, index){
+    toolTip.hide(data, this)
+    d3.select(this).style("stroke", "white");
+  })
+  return circlesGroup;
+}
+
